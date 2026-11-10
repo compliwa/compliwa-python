@@ -60,7 +60,10 @@ def test_the_key(client: Compliwa) -> None:
     facts = get_last_response(key)
     assert key["environment"] == "test"
     assert facts is not None and facts.environment == "test" and facts.request_id
-    assert facts.api_version == API_VERSION, "the library was generated from this API version"
+    # The API only adds within v1: a library generated from an earlier contract keeps working.
+    served = tuple(int(x) for x in (facts.api_version or "0.0.0").split("."))
+    built = tuple(int(x) for x in API_VERSION.split("."))
+    assert served[0] == built[0] and served >= built, f"API {facts.api_version} is {API_VERSION} or newer"
 
 
 def test_a_verification_replayed_read_and_listed(client: Compliwa, sandbox: Dict[str, Any]) -> None:
