@@ -23,6 +23,7 @@ from compliwa import (
     Compliwa,
     InvalidRequestError,
     NotFoundError,
+    PermissionDeniedError,
     get_last_response,
 )
 
@@ -108,3 +109,22 @@ def test_async_and_french(sandbox: Dict[str, Any]) -> None:
             assert invalid.value.title
 
     asyncio.run(run())
+
+
+def test_webhook_endpoints(client: Compliwa) -> None:
+    """Subscribe, change, unsubscribe — needs the key's "Manage webhook endpoints" scope."""
+    url = os.environ.get("COMPLIWA_E2E_HOOK_URL", "https://example.com/compliwa-sdk-e2e")
+    try:
+        created = client.webhook_endpoints.create(
+            {"url": url, "description": "SDK e2e", "events": ["verification.completed"]}
+        )
+    except PermissionDeniedError:
+        pytest.skip('this key lacks webhooks.manage — tick "Manage webhook endpoints" to run it')
+    assert created["id"].startswith("wep_") and created["secret"].startswith("whsec_")
+    try:
+        assert any(e["id"] == created["id"] for e in client.webhook_endpoints.list()["data"])
+        changed = client.webhook_endpoints.update(created["id"], {"events": ["screening.completed"]})
+        assert changed["events"] == ["screening.completed"]
+        assert changed["added_by_api_key"] is not None
+    finally:
+        assert client.webhook_endpoints.delete(created["id"])["deleted"] is True

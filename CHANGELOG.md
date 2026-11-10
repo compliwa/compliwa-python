@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 — 2026-11-10
+
+Generated from the Compliwa API contract 0.4.0.
+
+- `client.webhook_endpoints.list / create / retrieve / update / delete`: subscribe to events from your
+  server, in your key's environment (needs the key's `webhooks.manage` scope). `create` returns the
+  signing secret once — pass it to `verify_webhook()`.
+
 ## 0.1.0 — 2026-11-10
 
 The first release, generated from the Compliwa API contract 0.3.0.

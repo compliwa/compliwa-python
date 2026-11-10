@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "compliwa"
-version = "0.1.0"
+version = "0.2.0"
 description = "The official Python library for the Compliwa API: identity checks, screening, monitoring, cases, Travel Rule and signed webhooks."
 readme = "README.md"
 license = "MIT"
