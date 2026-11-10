@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "compliwa"
+version = "0.1.0"
+description = "The official Python library for the Compliwa API: identity checks, screening, monitoring, cases, Travel Rule and signed webhooks."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+dependencies = [
+  "httpx>=0.27,<1",
+  "typing_extensions>=4.7",
+]
+keywords = ["compliwa", "kyc", "aml", "compliance", "sanctions", "screening", "travel-rule", "webhooks"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Typing :: Typed",
+  "Framework :: AsyncIO",
+]
+
+[project.urls]
+Homepage = "https://compliwa.com/developers"
+Documentation = "https://compliwa.com/developers/api"
+Source = "https://github.com/compliwa/compliwa-python"
+Changelog = "https://github.com/compliwa/compliwa-python/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "mypy>=1.11", "ruff>=0.6"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/compliwa"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/compliwa", "README.md", "CHANGELOG.md", "LICENSE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["src/compliwa", "typecheck"]
+
+[[tool.mypy.overrides]]
+module = "compliwa._generated.*"
+disable_error_code = ["no-any-return", "unused-ignore"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+extend-exclude = ["src/compliwa/_generated"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = ["UP006", "UP007", "UP035", "UP045"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/generate.py" = ["E501"]
