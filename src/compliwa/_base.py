@@ -32,7 +32,8 @@ DEFAULT_TIMEOUT = 30.0
 DEFAULT_MAX_RETRIES = 2
 MAX_RETRY_AFTER = 60.0
 RETRY_STATUSES = frozenset({429, 500, 502, 503, 504})
-_KEY_SHAPE = re.compile(r"^cw_(test|live)_[A-Za-z0-9_-]{8,}$")
+# An API key (cw_test_… / cw_live_…) or an OAuth access token (cwat_test_… / cwat_live_…).
+_KEY_SHAPE = re.compile(r"^cw(?:at)?_(test|live)_[A-Za-z0-9_-]{8,}$")
 
 
 def resolve_api_key(api_key: Optional[str]) -> str:
@@ -47,7 +48,10 @@ def resolve_api_key(api_key: Optional[str]) -> str:
             if key.startswith("whsec_")
             else ""
         )
-        raise CompliwaError(f"An API key starts with cw_test_ or cw_live_.{hint}")
+        raise CompliwaError(
+            "An API key starts with cw_test_ or cw_live_ "
+            f"(an OAuth access token with cwat_test_ or cwat_live_).{hint}"
+        )
     return key
 
 
@@ -184,8 +188,9 @@ class BaseClient:
 
     @property
     def environment(self) -> str:
-        """'test' (sandbox, never charged) or 'live' — decided by the key."""
-        return "live" if self._api_key.startswith("cw_live_") else "test"
+        """'test' (sandbox, never charged) or 'live' — decided by the key or access token."""
+        match = _KEY_SHAPE.match(self._api_key)
+        return match.group(1) if match else "test"
 
     def __repr__(self) -> str:  # never the key
         return f"{type(self).__name__}(environment={self.environment!r}, base_url={self.base_url!r})"

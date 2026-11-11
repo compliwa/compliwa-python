@@ -9,14 +9,16 @@ from compliwa import Compliwa
 
 client = Compliwa()  # reads COMPLIWA_API_KEY
 
-verification = client.verifications.create({
-    "check": "NG:NIN",
-    "id_number": "12345678901",
-    "first_name": "Ada",
-    "last_name": "Okafor",
-    "date_of_birth": "1990-05-14",
-    "consent": True,
-})
+verification = client.verifications.create(
+    {
+        "check": "NG:NIN",
+        "id_number": "12345678901",
+        "first_name": "Ada",
+        "last_name": "Okafor",
+        "date_of_birth": "1990-05-14",
+        "consent": True,
+    }
+)
 
 print(verification["id"], verification["outcome"])
 ```
@@ -46,6 +48,22 @@ Keep it in an environment variable or your secret manager, never in code. `Compl
 argument reads `COMPLIWA_API_KEY`. The sandbox's test numbers are listed at `GET /v1/sandbox` and on
 the [Sandbox page](https://compliwa.com/developers/api/sandbox).
 
+## An app your customers connect (OAuth)
+
+If you build a product that other companies connect to their Compliwa workspace, they click
+"Allow" on Compliwa's consent screen instead of pasting a key into your product. Your server then
+holds an OAuth access token (`cwat_test_…` or `cwat_live_…`, one hour) for each customer. It works
+everywhere a key does:
+
+```python
+customer = Compliwa(access_token_from_your_database)
+verifications = customer.verifications.list({"limit": 10})
+```
+
+When it expires the API answers `401 access_token_expired`: exchange your refresh token at
+`POST /v1/oauth/token` (any OAuth library does this) and use the new access token. The flow, the
+scopes and the token endpoint are in the API reference, under OAuth.
+
 ## How methods read
 
 `client.<resource>.<method>(*ids, params, **options)`
@@ -71,11 +89,13 @@ your editor completes the fields and `mypy` checks them. Every operation, with e
 import asyncio
 from compliwa import AsyncCompliwa
 
+
 async def main() -> None:
     async with AsyncCompliwa() as client:
         screening = await client.screenings.create({"type": "person", "name": "Ada Okafor"})
         async for verification in client.verifications.list({"status": "completed"}):
             print(verification["id"])
+
 
 asyncio.run(main())
 ```
@@ -84,10 +104,10 @@ asyncio.run(main())
 
 ```python
 page = client.verifications.list({"status": "completed", "limit": 50})
-page.data, page.has_more, page.next_cursor          # one page, as sent
+page.data, page.has_more, page.next_cursor  # one page, as sent
 
 for verification in client.verifications.list({"status": "completed"}):
-    ...                                              # every item, page after page
+    ...  # every item, page after page
 
 everyone = client.monitoring.customers.list({"risk": "high"}).to_list(max_items=5000)
 ```
@@ -159,6 +179,7 @@ from compliwa import WebhookSignatureError, verify_webhook
 
 app = Flask(__name__)
 
+
 @app.post("/webhooks/compliwa")
 def compliwa_webhook():
     try:
@@ -188,12 +209,12 @@ and errors.
 ```python
 Compliwa(
     api_key,
-    base_url="http://localhost:5010",    # default https://api.compliwa.com (or COMPLIWA_BASE_URL)
-    timeout=30,                          # seconds per attempt
+    base_url="http://localhost:5010",  # default https://api.compliwa.com (or COMPLIWA_BASE_URL)
+    timeout=30,  # seconds per attempt
     max_retries=2,
-    language="en",                       # en · fr · es · ar
+    language="en",  # en · fr · es · ar
     app_info={"name": "acmepay-onboarding", "version": "3.1.0"},  # added to the User-Agent
-    http_client=httpx.Client(...),       # your own (proxies, certificates)
+    http_client=httpx.Client(...),  # your own (proxies, certificates)
 )
 ```
 

@@ -36,6 +36,13 @@ def test_the_key_required_shaped_never_printed(monkeypatch: pytest.MonkeyPatch) 
     assert "bbbb" not in repr(live) and "bbbb" not in str(live)
 
 
+def test_an_oauth_access_token_works_like_a_key() -> None:
+    assert Compliwa("cwat_live_" + "c" * 40).environment == "live"
+    assert Compliwa("cwat_test_" + "c" * 40).environment == "test"
+    with pytest.raises(CompliwaError, match="starts with cw_test_ or cw_live_"):
+        Compliwa("cwrt_test_" + "c" * 40)  # a refresh token is for the token endpoint only
+
+
 def test_every_operation_is_a_method() -> None:
     client = make(Script())
     assert len(compliwa.OPERATIONS) >= 60

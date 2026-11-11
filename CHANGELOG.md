@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 — 2026-11-10
+
+Generated from the Compliwa API contract 0.6.0.
+
+- OAuth access tokens: `Compliwa("cwat_test_…")` works for an app your customers connected with
+  OAuth — the same methods, retries and errors as an API key; `environment` comes from the token.
+- `client.api_key.retrieve()` tells you the app (`oauth_app`) when you call with an access token.
+
 ## 0.2.0 — 2026-11-10
 
 Generated from the Compliwa API contract 0.4.0.
